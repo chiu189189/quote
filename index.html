@@ -14,20 +14,35 @@
 <link rel="icon" href="icon.png">
 <style>
   html, body { margin: 0; height: 100%; background: #0E0E10; overflow: hidden; }
-  /* 報價系統本體（Streamlit）放在這個框裡；上下留出瀏海和底部橫條的空間 */
+  /* 報價系統本體（Streamlit）放在這個框裡；上面留出瀏海的空間，下面一路到底 */
   iframe {
     position: fixed; border: 0; display: block;
     top: env(safe-area-inset-top); left: env(safe-area-inset-left);
     width: calc(100% - env(safe-area-inset-left) - env(safe-area-inset-right));
-    height: calc(100% - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    height: calc(100vh - env(safe-area-inset-top));
     background: #0E0E10;
   }
-  .home-bar { position: fixed; left: 0; right: 0; bottom: 0; height: env(safe-area-inset-bottom); background: #0B0B0D; }
 </style>
 </head>
 <body>
 <iframe src="https://luxury-quote-client-uidt4sa46ust8ctle2zntn.streamlit.app/~/+/?embed=true"
   allow="clipboard-read; clipboard-write; web-share" title="CHIU189 批發報價"></iframe>
-<div class="home-bar"></div>
+<div id="probe" style="position:absolute;visibility:hidden;padding-top:env(safe-area-inset-top)"></div>
+<script>
+// iPhone 從主畫面打開時，網頁拿到的高度會少一截（系統毛病），底下就空一條。
+// 這裡改用整個螢幕的高度，讓報價框一路延伸到最底下；底部橫條的留白交給裡面的頁面自己處理。
+(() => {
+  const f = document.querySelector("iframe"), probe = document.getElementById("probe");
+  const fit = () => {
+    const top = parseFloat(getComputedStyle(probe).paddingTop) || 0;
+    const portrait = matchMedia("(orientation: portrait)").matches;
+    const full = navigator.standalone ? (portrait ? screen.height : screen.width) : window.innerHeight;
+    f.style.height = Math.max(full, window.innerHeight) - top + "px";
+  };
+  fit();
+  addEventListener("resize", fit);
+  addEventListener("orientationchange", () => setTimeout(fit, 300));
+})();
+</script>
 </body>
 </html>
