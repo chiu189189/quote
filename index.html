@@ -3,41 +3,194 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CHIU189 批發報價</title>
-<!-- 頂端狀態列跟報價頁同色 -->
+<title>CHIU189 批發專區</title>
+<meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#0E0E10">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="CHIU189 報價">
+<meta name="apple-mobile-web-app-title" content="CHIU189 批發">
+<link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
+<link rel="preconnect" href="https://luxury-quote-api.onrender.com" crossorigin>
 <link rel="preconnect" href="https://luxury-quote-client-uidt4sa46ust8ctle2zntn.streamlit.app" crossorigin>
 <style>
-  html, body { margin: 0; height: 100%; background: #0E0E10; overflow: hidden; }
-  /* 狀態列用黑色（不透明），網頁從狀態列下面開始，高度剛好等於可用畫面；底部橫條的留白交給裡面的頁面 */
-  iframe { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; display: block; background: var(--bg, #0E0E10); }
-  /* 打開時先蓋一層載入畫面，裡面好了再淡出（不然頭幾秒是一片空白，像當機） */
-  #splash { position: fixed; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
-    background: var(--bg, #0E0E10); transition: opacity .35s ease; font: 14px -apple-system, "PingFang TC", sans-serif; color: #9a9aa2; letter-spacing: .1em; }
-  #splash img { width: 84px; height: 84px; border-radius: 20px; }
-  #splash i { width: 22px; height: 22px; border: 2px solid rgba(200,169,106,.25); border-top-color: #C8A96A; border-radius: 50%; animation: spin .8s linear infinite; }
-  #splash.done { opacity: 0; pointer-events: none; }
+  /* 批發專區：輸入通行碼後，上方切換［新品商品］［批發報價］（2026-11-04） */
+  :root { --bg: #0E0E10; --gold: #E6CB8F; --line: #2a2a2e; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: #eee; overflow: hidden;
+    font-family: -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif; -webkit-text-size-adjust: 100%; }
+  button, input { font-family: inherit; }
+  /* 上方分頁列 */
+  #top { position: fixed; left: 0; right: 0; top: 0; z-index: 3; height: calc(52px + env(safe-area-inset-top));
+    padding: env(safe-area-inset-top) 12px 0; box-sizing: border-box; display: flex; align-items: center; gap: 10px;
+    background: rgba(14,14,16,.97); border-bottom: 1px solid var(--line); }
+  #top .logo { color: var(--gold); font-weight: 800; letter-spacing: .06em; font-size: 15px; white-space: nowrap; }
+  .tabs { flex: 1; display: flex; background: #1a1a1d; border: 1px solid var(--line); border-radius: 12px; padding: 3px; max-width: 360px; margin: 0 auto; }
+  .tabs button { flex: 1; border: none; background: none; color: #9a9aa2; font-size: 14px; font-weight: 600; padding: 7px 0; border-radius: 9px; cursor: pointer; white-space: nowrap; }
+  .tabs button.on { background: var(--gold); color: #111; }
+  #bell { flex: 0 0 auto; border: 1px solid #E6CB8F88; background: #1a1a1d; color: var(--gold); border-radius: 999px; width: 36px; height: 36px; font-size: 16px; cursor: pointer; }
+  #bell.on { background: var(--gold); }
+  /* 兩個分頁的內容 */
+  .pane { position: fixed; left: 0; right: 0; bottom: 0; top: calc(52px + env(safe-area-inset-top)); display: none; background: var(--bg); }
+  .pane.on { display: block; }
+  .pane iframe { width: 100%; height: 100%; border: 0; display: block; background: var(--bg); }
+  .load { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+    background: var(--bg); color: #9a9aa2; font-size: 14px; letter-spacing: .1em; transition: opacity .35s; }
+  .load.done { opacity: 0; pointer-events: none; }
+  .load i { width: 22px; height: 22px; border: 2px solid rgba(200,169,106,.25); border-top-color: #C8A96A; border-radius: 50%; animation: spin .8s linear infinite; }
+  .load small { color: #66666e; letter-spacing: 0; }
   @keyframes spin { to { transform: rotate(360deg); } }
+  /* 通行碼畫面 */
+  #lock { position: fixed; inset: 0; z-index: 5; background: var(--bg); display: none; align-items: center; justify-content: center; padding: 24px; }
+  #lock.on { display: flex; }
+  .lk { width: 100%; max-width: 340px; text-align: center; }
+  .lk img { width: 76px; height: 76px; border-radius: 18px; }
+  .lk h1 { color: var(--gold); font-size: 20px; margin: 16px 0 4px; letter-spacing: .06em; }
+  .lk p { color: #8a8a92; font-size: 14px; margin: 0 0 22px; line-height: 1.7; }
+  #pw { width: 100%; box-sizing: border-box; background: #17171a; border: 1px solid #333; color: #fff; border-radius: 14px; padding: 14px; font-size: 24px;
+    letter-spacing: .12em; text-align: center; }
+  #pw::placeholder { letter-spacing: 0; font-size: 16px; color: #55555c; }
+  #pw:focus { outline: none; border-color: var(--gold); }
+  #go { width: 100%; margin-top: 12px; border: none; border-radius: 14px; padding: 14px; font-size: 16px; font-weight: 700; cursor: pointer;
+    background: linear-gradient(135deg, #EAD29C, #CDA963 55%, #A8843F); color: #15120B; }
+  #go:disabled { opacity: .6; }
+  #msg { min-height: 22px; margin-top: 12px; color: #E5484D; font-size: 14px; }
+  .lk .hint { color: #66666e; font-size: 12.5px; margin-top: 18px; line-height: 1.7; }
+  /* 說明視窗、提示 */
+  #help { position: fixed; inset: 0; z-index: 8; background: rgba(0,0,0,.7); display: none; align-items: flex-end; justify-content: center; }
+  #help.on { display: flex; }
+  .hb { background: #1b1b1b; border: 1px solid #333; border-radius: 16px 16px 0 0; max-width: 520px; width: 100%; box-sizing: border-box;
+    padding: 20px 20px calc(24px + env(safe-area-inset-bottom)); line-height: 1.8; font-size: 15px; }
+  .hb h3 { margin: 0 0 8px; color: var(--gold); font-size: 17px; } .hb ol { margin: 0; padding-left: 1.3em; } .hb b { color: var(--gold); }
+  .hb button { margin-top: 14px; width: 100%; background: #2a2a2a; color: #ddd; border: none; border-radius: 10px; padding: 11px; font-size: 15px; }
+  #toast { position: fixed; left: 50%; bottom: calc(30px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 9; background: var(--gold); color: #111;
+    padding: 8px 16px; border-radius: 999px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; white-space: nowrap; }
+  #toast.on { opacity: 1; }
+  @media (max-width: 380px) { #top .logo { display: none; } }
 </style>
 </head>
 <body>
-<iframe src="https://luxury-quote-client-uidt4sa46ust8ctle2zntn.streamlit.app/~/+/?embed=true"
-  allow="clipboard-read; clipboard-write; web-share" title="CHIU189 批發報價"></iframe>
-<div id="splash"><img src="icon.png" alt=""><i></i><span>載入中…</span></div>
+<div id="top">
+  <span class="logo">CHIU189</span>
+  <div class="tabs"><button data-t="shop">新品商品</button><button data-t="quote">批發報價</button></div>
+  <button id="bell" aria-label="新品通知">🔔</button>
+</div>
+<div class="pane" id="p-shop"><div class="load" id="l-shop"><i></i><span>載入中…</span></div></div>
+<div class="pane" id="p-quote"><div class="load" id="l-quote"><i></i><span>載入中…</span><small>報價系統久沒人用會休眠，第一次可能要等 30 秒</small></div></div>
+
+<div id="lock"><div class="lk">
+  <img src="icon.png" alt="">
+  <h1>CHIU189 批發專區</h1>
+  <p>批發客專用，請輸入店家提供的通行碼</p>
+  <input id="pw" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="30" placeholder="輸入通行碼" enterkeyhint="go">
+  <button id="go">進入</button>
+  <div id="msg"></div>
+  <div class="hint">同一支手機輸入一次就會記住<br>沒有通行碼？請在 LINE 詢問店家</div>
+</div></div>
+<div id="help"><div class="hb" id="hbody"></div></div>
+<div id="toast"></div>
+
 <script>
-  // 框架載完後再等一下（裡面的頁面還要畫一次），然後淡出；最多等 15 秒
-  (() => {
-    const sp = document.getElementById("splash");
-    const hide = () => { sp.classList.add("done"); setTimeout(() => sp.remove(), 400); };
-    document.querySelector("iframe").addEventListener("load", () => setTimeout(hide, 1200), { once: true });
-    setTimeout(hide, 15000);
-  })();
+var API = "https://luxury-quote-api.onrender.com";
+var QUOTE = "https://luxury-quote-client-uidt4sa46ust8ctle2zntn.streamlit.app/~/+/?embed=true";
+var $ = function (id) { return document.getElementById(id); };
+function ls(k, v) { try { if (v === undefined) return JSON.parse(localStorage.getItem(k)); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) { return null; } }
+function show(m) { var t = $("toast"); t.textContent = m; t.classList.add("on"); clearTimeout(show.t); show.t = setTimeout(function () { t.classList.remove("on"); }, 2500); }
+function sheet(h) { $("hbody").innerHTML = h + "<button id=hclose>知道了</button>"; $("help").classList.add("on"); $("hclose").onclick = function () { $("help").classList.remove("on"); }; }
+$("help").onclick = function (e) { if (e.target === $("help")) $("help").classList.remove("on"); };
+
+var auth = ls("chiu_q");   // {token, shop, push, vkey}
+var since = new URLSearchParams(location.search).get("since") || "";   // 從新品通知點進來
+
+// ===== 分頁 =====
+var loaded = {};
+function frame(t) {
+  if (loaded[t]) return;
+  loaded[t] = true;
+  var f = document.createElement("iframe");
+  f.allow = "clipboard-read; clipboard-write; web-share";
+  f.title = t === "shop" ? "新品商品" : "批發報價";
+  f.src = t === "shop" ? auth.shop + "?embed=1" + (since ? "&since=" + encodeURIComponent(since) : "") : QUOTE + "&t=" + encodeURIComponent(auth.token);
+  var l = $("l-" + t);
+  f.addEventListener("load", function () { setTimeout(function () { l.classList.add("done"); }, t === "quote" ? 1200 : 200); }, {once: true});
+  setTimeout(function () { l.classList.add("done"); }, 20000);
+  $("p-" + t).insertBefore(f, l);
+}
+function tab(t) {
+  document.querySelectorAll(".tabs button").forEach(function (b) { b.classList.toggle("on", b.dataset.t === t); });
+  document.querySelectorAll(".pane").forEach(function (p) { p.classList.toggle("on", p.id === "p-" + t); });
+  frame(t); ls("chiu_tab", t);
+}
+document.querySelectorAll(".tabs button").forEach(function (b) { b.onclick = function () { tab(b.dataset.t); }; });
+
+function start() {
+  $("lock").classList.remove("on");
+  tab(since ? "shop" : (ls("chiu_tab") || "shop"));
+  setTimeout(function () { frame("quote"); }, 3000);   // 先在背後叫醒報價系統，切過去就不用等
+  initBell();
+}
+
+// ===== 通行碼 =====
+function lock(msg) { $("lock").classList.add("on"); $("msg").textContent = msg || ""; setTimeout(function () { $("pw").focus(); }, 300); }
+function submit() {
+  var pw = $("pw").value.trim();
+  if (!pw) return;
+  $("go").disabled = true; $("go").textContent = "確認中…"; $("msg").textContent = "";
+  fetch(API + "/quote-auth", {method: "POST", body: pw}).then(function (r) { return r.json(); }).then(function (d) {
+    if (!d.ok) throw new Error(d.msg || "通行碼不對");
+    auth = {token: d.token, shop: d.shop, push: d.push, vkey: d.vkey}; ls("chiu_q", auth);
+    start();
+  }).catch(function (e) {
+    $("msg").textContent = e && e.message && !/fetch|network|Load failed/i.test(e.message) ? e.message : "連線失敗，伺服器可能在啟動中，請 30 秒後再試";
+  }).then(function () { $("go").disabled = false; $("go").textContent = "進入"; });
+}
+$("go").onclick = submit;
+$("pw").addEventListener("keydown", function (e) { if (e.key === "Enter") submit(); });
+
+if (!auth || !auth.token) lock();
+else {
+  start();
+  // 背後確認通行證還有效（店家換了通行碼就要重新輸入）；連不上就先照常用
+  fetch(API + "/quote-auth/check?t=" + encodeURIComponent(auth.token)).then(function (r) { return r.json(); }).then(function (d) {
+    if (d && d.ok === false) { ls("chiu_q", null); location.reload(); }
+  }).catch(function () {});
+}
+
+// ===== 新品通知（加到主畫面後，有新品手機會跳通知；不用 LINE 則數）=====
+var bell = $("bell"), reg = null;
+var ua = navigator.userAgent, isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+var standalone = window.navigator.standalone || matchMedia("(display-mode: standalone)").matches;
+var canPush = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+function b64(s) { s = (s + "===".slice((s.length + 3) % 4)).replace(/-/g, "+").replace(/_/g, "/"); var r = atob(s), a = new Uint8Array(r.length); for (var i = 0; i < r.length; i++) a[i] = r.charCodeAt(i); return a; }
+function save(sub) { var j = JSON.parse(JSON.stringify(sub)); j.src = "quote"; return fetch(auth.push, {method: "POST", body: JSON.stringify(j)}); }
+function setOn(on) { bell.classList.toggle("on", on); }
+function initBell() {
+  if (reg || !canPush) return;
+  reg = navigator.serviceWorker.register("sw.js");
+  reg.then(function (r) { return r.pushManager.getSubscription(); }).then(function (sub) {
+    if (sub && Notification.permission === "granted") { setOn(true); save(sub); }   // 每次打開都再登記一次，伺服器資料不見也會補回來
+  }).catch(function () {});
+}
+bell.onclick = function () {
+  if (/Line\//.test(ua)) return sheet("<h3>請用瀏覽器打開</h3>LINE 裡面沒辦法開通知。<ol><li>按右上角「⋯」或右下角圖示</li><li>選「用預設瀏覽器開啟」（Safari／Chrome）</li><li>再按一次 🔔</li></ol>");
+  if (isIOS && !standalone) return sheet("<h3>iPhone 要先加到主畫面</h3><ol><li>用 <b>Safari</b> 打開這一頁</li><li>按下方中間的「分享」<b>⬆︎</b></li><li>往下滑，選「<b>加入主畫面</b>」→ 新增</li><li>從主畫面的 <b>CHIU189 批發</b> 圖示打開（第一次要再輸入一次通行碼）</li><li>按右上角 🔔 → 允許</li></ol>");
+  if (!canPush) return sheet("<h3>這個瀏覽器不支援通知</h3>請改用 Chrome 或 Safari（iPhone 需 iOS 16.4 以上）。");
+  if (!reg) initBell();
+  if (bell.classList.contains("on")) {
+    if (!confirm("要關閉新品通知嗎？")) return;
+    return reg.then(function (r) { return r.pushManager.getSubscription(); }).then(function (sub) {
+      if (!sub) return setOn(false);
+      fetch(auth.push + "?unsub=1", {method: "POST", body: JSON.stringify({endpoint: sub.endpoint})});
+      return sub.unsubscribe().then(function () { setOn(false); show("已關閉新品通知"); });
+    });
+  }
+  Notification.requestPermission().then(function (p) {
+    if (p !== "granted") return sheet("<h3>通知被關掉了</h3>請到手機「設定 → 通知」找到 CHIU189 批發（或瀏覽器），把通知打開，再按一次 🔔。");
+    return reg.then(function (r) { return r.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: b64(auth.vkey)}); })
+      .then(function (sub) { return save(sub).then(function (res) { if (!res.ok) throw new Error(res.status); setOn(true); show("已開啟！有新品會通知你 🔔"); }); });
+  }).catch(function (e) { sheet("<h3>開啟失敗</h3>" + String(e && e.message ? e.message : e).replace(/</g, "&lt;") + "<br>請稍後再試，或跟店家說。"); });
+};
 </script>
 </body>
 </html>
