@@ -111,7 +111,8 @@ function frame(t) {
   var f = document.createElement("iframe");
   f.allow = "clipboard-read; clipboard-write; web-share";
   f.title = t === "shop" ? "新品商品" : "批發報價";
-  f.src = t === "shop" ? auth.shop + "?embed=1" + (since ? "&since=" + encodeURIComponent(since) : "") : QUOTE + "&t=" + encodeURIComponent(auth.token);
+  f.src = t === "shop" ? auth.shop + "?embed=1&t=" + encodeURIComponent(auth.token) + (since ? "&since=" + encodeURIComponent(since) : "")
+                       : QUOTE + "&t=" + encodeURIComponent(auth.token);   // 商品頁、報價系統都要通行證
   var l = $("l-" + t);
   f.addEventListener("load", function () { setTimeout(function () { l.classList.add("done"); }, t === "quote" ? 1200 : 200); }, {once: true});
   setTimeout(function () { l.classList.add("done"); }, 20000);
