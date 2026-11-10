@@ -13,59 +13,70 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700&display=swap&text=%E6%89%B9%E7%99%BC%E5%B0%88%E5%8D%80" media="print" onload="this.media='all'">
 <link rel="preconnect" href="https://luxury-quote-api.onrender.com" crossorigin>
 <link rel="preconnect" href="https://luxury-quote-client-uidt4sa46ust8ctle2zntn.streamlit.app" crossorigin>
 <style>
-  /* 批發專區：輸入通行碼後，上方切換［新品商品］［批發報價］（2026-11-04） */
-  :root { --bg: #0E0E10; --gold: #E6CB8F; --line: #2a2a2e; }
-  html, body { margin: 0; height: 100%; background: var(--bg); color: #eee; overflow: hidden;
-    font-family: -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif; -webkit-text-size-adjust: 100%; }
+  /* 批發專區：輸入通行碼後，上方切換［新品商品］［批發報價］（2026-11-04；2026-11-10 排版整理，顏色跟商品頁、報價頁統一） */
+  :root { --bg: #0E0E10; --s1: #17171A; --s2: #1F1F23; --line: #2A2A2E; --tx: #F2EFE9; --mu: #A8A49C; --fa: #8A867E;
+    --gold: #E6CB8F; --gold2: #C8A96A; --ink: #15120B; --gg: linear-gradient(135deg, #EAD29C, #CDA963 55%, #A8843F); color-scheme: dark; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--tx); overflow: hidden;
+    font-family: -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif; -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
   button, input { font-family: inherit; }
+  button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
   /* 上方分頁列 */
   #top { position: fixed; left: 0; right: 0; top: 0; z-index: 3; height: calc(52px + env(safe-area-inset-top));
     padding: env(safe-area-inset-top) 12px 0; box-sizing: border-box; display: flex; align-items: center; gap: 10px;
     background: rgba(14,14,16,.97); border-bottom: 1px solid var(--line); }
-  #top .logo { color: var(--gold); font-weight: 800; letter-spacing: .06em; font-size: 15px; white-space: nowrap; }
-  .tabs { flex: 1; display: flex; background: #1a1a1d; border: 1px solid var(--line); border-radius: 12px; padding: 3px; max-width: 360px; margin: 0 auto; }
-  .tabs button { flex: 1; border: none; background: none; color: #9a9aa2; font-size: 14px; font-weight: 600; padding: 7px 0; border-radius: 9px; cursor: pointer; white-space: nowrap; }
-  .tabs button.on { background: var(--gold); color: #111; }
-  #bell { flex: 0 0 auto; border: 1px solid #E6CB8F88; background: #1a1a1d; color: var(--gold); border-radius: 999px; width: 36px; height: 36px; font-size: 16px; cursor: pointer; }
-  #bell.on { background: var(--gold); }
+  #top .logo { color: var(--gold); font-weight: 800; letter-spacing: .14em; font-size: 14px; white-space: nowrap; padding-left: 4px; }
+  .tabs { flex: 1; display: flex; background: var(--s1); border: 1px solid var(--line); border-radius: 12px; padding: 3px; max-width: 360px; margin: 0 auto; }
+  .tabs button { flex: 1; border: none; background: none; color: var(--mu); font-size: 14px; font-weight: 600; padding: 7px 0; border-radius: 9px; cursor: pointer; white-space: nowrap;
+    transition: color .15s; }
+  .tabs button.on { background: var(--gg); color: var(--ink); font-weight: 700; box-shadow: inset 0 1px 0 rgba(255,255,255,.45); }
+  #bell { flex: 0 0 auto; display: grid; place-items: center; border: 1px solid rgba(230,203,143,.5); background: var(--s1); color: var(--gold); border-radius: 50%;
+    width: 36px; height: 36px; padding: 0; cursor: pointer; }
+  #bell svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  #bell.on { background: var(--gold); border-color: var(--gold); color: var(--ink); }
+  #bell.on svg path:first-child { fill: currentColor; }
   /* 兩個分頁的內容 */
   .pane { position: fixed; left: 0; right: 0; bottom: 0; top: calc(52px + env(safe-area-inset-top)); display: none; background: var(--bg); }
   .pane.on { display: block; }
   .pane iframe { width: 100%; height: 100%; border: 0; display: block; background: var(--bg); }
   .load { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
-    background: var(--bg); color: #9a9aa2; font-size: 14px; letter-spacing: .1em; transition: opacity .35s; }
+    background: var(--bg); color: var(--mu); font-size: 14px; letter-spacing: .1em; transition: opacity .35s; }
   .load.done { opacity: 0; pointer-events: none; }
-  .load i { width: 22px; height: 22px; border: 2px solid rgba(200,169,106,.25); border-top-color: #C8A96A; border-radius: 50%; animation: spin .8s linear infinite; }
-  .load small { color: #66666e; letter-spacing: 0; }
+  .load i { width: 22px; height: 22px; border: 2px solid rgba(200,169,106,.25); border-top-color: var(--gold2); border-radius: 50%; animation: spin .8s linear infinite; }
+  .load small { color: var(--fa); letter-spacing: 0; }
   @keyframes spin { to { transform: rotate(360deg); } }
   /* 通行碼畫面 */
-  #lock { position: fixed; inset: 0; z-index: 5; background: var(--bg); display: none; align-items: center; justify-content: center; padding: 24px; }
+  #lock { position: fixed; inset: 0; z-index: 5; display: none; align-items: center; justify-content: center; padding: 24px;
+    background: radial-gradient(120% 55% at 50% 0%, rgba(200,169,106,.13), rgba(200,169,106,0) 62%), var(--bg); }
   #lock.on { display: flex; }
   .lk { width: 100%; max-width: 340px; text-align: center; }
-  .lk img { width: 76px; height: 76px; border-radius: 18px; }
-  .lk h1 { color: var(--gold); font-size: 20px; margin: 16px 0 4px; letter-spacing: .06em; }
-  .lk p { color: #8a8a92; font-size: 14px; margin: 0 0 22px; line-height: 1.7; }
-  #pw { width: 100%; box-sizing: border-box; background: #17171a; border: 1px solid #333; color: #fff; border-radius: 14px; padding: 14px; font-size: 24px;
-    letter-spacing: .12em; text-align: center; }
-  #pw::placeholder { letter-spacing: 0; font-size: 16px; color: #55555c; }
-  #pw:focus { outline: none; border-color: var(--gold); }
-  #go { width: 100%; margin-top: 12px; border: none; border-radius: 14px; padding: 14px; font-size: 16px; font-weight: 700; cursor: pointer;
-    background: linear-gradient(135deg, #EAD29C, #CDA963 55%, #A8843F); color: #15120B; }
+  .lk img { width: 76px; height: 76px; border-radius: 18px; box-shadow: 0 10px 30px rgba(0,0,0,.5), 0 0 0 1px rgba(230,203,143,.18); }
+  .lk .eb { color: var(--gold2); font-size: 11.5px; letter-spacing: .3em; margin: 20px 0 6px; padding-left: .3em; }
+  .lk h1 { font-family: "Noto Serif TC", "Songti TC", serif; color: var(--tx); font-size: 30px; line-height: 1.25; margin: 0 0 8px; letter-spacing: .08em; padding-left: .08em; }
+  .lk p { color: var(--mu); font-size: 14px; margin: 0 0 24px; line-height: 1.7; }
+  #pw { width: 100%; box-sizing: border-box; background: var(--s1); border: 1px solid var(--line); color: #fff; border-radius: 14px; padding: 14px; font-size: 24px;
+    letter-spacing: .12em; text-align: center; transition: border-color .15s, box-shadow .15s; }
+  #pw::placeholder { letter-spacing: 0; font-size: 16px; color: #6F6C66; }
+  #pw:focus { outline: none; border-color: var(--gold2); box-shadow: 0 0 0 3px rgba(200,169,106,.16); }
+  #go { width: 100%; margin-top: 12px; border: none; border-radius: 14px; padding: 14px; font-size: 16px; font-weight: 700; letter-spacing: .1em; cursor: pointer;
+    background: var(--gg); color: var(--ink); box-shadow: 0 6px 18px rgba(201,164,95,.28), inset 0 1px 0 rgba(255,255,255,.5); transition: transform .15s; }
+  #go:active { transform: scale(.98); }
   #go:disabled { opacity: .6; }
-  #msg { min-height: 22px; margin-top: 12px; color: #E5484D; font-size: 14px; }
-  .lk .hint { color: #66666e; font-size: 12.5px; margin-top: 18px; line-height: 1.7; }
+  #msg { min-height: 22px; margin-top: 12px; color: #FF7A7F; font-size: 14px; }
+  .lk .hint { color: var(--fa); font-size: 12.5px; margin-top: 14px; padding-top: 16px; border-top: 1px solid var(--line); line-height: 1.8; }
   /* 說明視窗、提示 */
   #help { position: fixed; inset: 0; z-index: 8; background: rgba(0,0,0,.7); display: none; align-items: flex-end; justify-content: center; }
   #help.on { display: flex; }
-  .hb { background: #1b1b1b; border: 1px solid #333; border-radius: 16px 16px 0 0; max-width: 520px; width: 100%; box-sizing: border-box;
+  .hb { background: var(--s1); border: 1px solid var(--line); border-radius: 18px 18px 0 0; max-width: 520px; width: 100%; box-sizing: border-box;
     padding: 20px 20px calc(24px + env(safe-area-inset-bottom)); line-height: 1.8; font-size: 15px; }
   .hb h3 { margin: 0 0 8px; color: var(--gold); font-size: 17px; } .hb ol { margin: 0; padding-left: 1.3em; } .hb b { color: var(--gold); }
-  .hb button { margin-top: 14px; width: 100%; background: #2a2a2a; color: #ddd; border: none; border-radius: 10px; padding: 11px; font-size: 15px; }
-  #toast { position: fixed; left: 50%; bottom: calc(30px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 9; background: var(--gold); color: #111;
-    padding: 8px 16px; border-radius: 999px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; white-space: nowrap; }
+  .hb button { margin-top: 14px; width: 100%; background: var(--s2); color: var(--tx); border: 1px solid var(--line); border-radius: 12px; padding: 11px; font-size: 15px; cursor: pointer; }
+  #toast { position: fixed; left: 50%; bottom: calc(30px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 9; background: var(--gold); color: var(--ink);
+    padding: 8px 16px; border-radius: 999px; font-size: 14px; font-weight: 600; opacity: 0; transition: opacity .2s; pointer-events: none; white-space: nowrap; box-shadow: 0 8px 24px rgba(0,0,0,.45); }
   #toast.on { opacity: 1; }
   @media (max-width: 380px) { #top .logo { display: none; } }
 </style>
@@ -74,14 +85,15 @@
 <div id="top">
   <span class="logo">CHIU189</span>
   <div class="tabs"><button data-t="shop">新品商品</button><button data-t="quote">批發報價</button></div>
-  <button id="bell" aria-label="新品通知">🔔</button>
+  <button id="bell" aria-label="新品通知"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></button>
 </div>
 <div class="pane" id="p-shop"><div class="load" id="l-shop"><i></i><span>載入中…</span></div></div>
 <div class="pane" id="p-quote"><div class="load" id="l-quote"><i></i><span>載入中…</span><small>報價系統久沒人用會休眠，第一次可能要等 30 秒</small></div></div>
 
 <div id="lock"><div class="lk">
   <img src="icon.png" alt="">
-  <h1>CHIU189 批發專區</h1>
+  <div class="eb">CHIU189 WHOLESALE</div>
+  <h1>批發專區</h1>
   <p>批發客專用，請輸入店家提供的通行碼</p>
   <input id="pw" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="30" placeholder="輸入通行碼" enterkeyhint="go">
   <button id="go">進入</button>
@@ -174,8 +186,8 @@ function initBell() {
   }).catch(function () {});
 }
 bell.onclick = function () {
-  if (/Line\//.test(ua)) return sheet("<h3>請用瀏覽器打開</h3>LINE 裡面沒辦法開通知。<ol><li>按右上角「⋯」或右下角圖示</li><li>選「用預設瀏覽器開啟」（Safari／Chrome）</li><li>再按一次 🔔</li></ol>");
-  if (isIOS && !standalone) return sheet("<h3>iPhone 要先加到主畫面</h3><ol><li>用 <b>Safari</b> 打開這一頁</li><li>按下方中間的「分享」<b>⬆︎</b></li><li>往下滑，選「<b>加入主畫面</b>」→ 新增</li><li>從主畫面的 <b>CHIU189 批發</b> 圖示打開（第一次要再輸入一次通行碼）</li><li>按右上角 🔔 → 允許</li></ol>");
+  if (/Line\//.test(ua)) return sheet("<h3>請用瀏覽器打開</h3>LINE 裡面沒辦法開通知。<ol><li>按右上角「⋯」或右下角圖示</li><li>選「用預設瀏覽器開啟」（Safari／Chrome）</li><li>再按一次右上角的鈴鐺</li></ol>");
+  if (isIOS && !standalone) return sheet("<h3>iPhone 要先加到主畫面</h3><ol><li>用 <b>Safari</b> 打開這一頁</li><li>按下方中間的「分享」<b>⬆︎</b></li><li>往下滑，選「<b>加入主畫面</b>」→ 新增</li><li>從主畫面的 <b>CHIU189 批發</b> 圖示打開（第一次要再輸入一次通行碼）</li><li>按右上角的鈴鐺 → 允許</li></ol>");
   if (!canPush) return sheet("<h3>這個瀏覽器不支援通知</h3>請改用 Chrome 或 Safari（iPhone 需 iOS 16.4 以上）。");
   if (!reg) initBell();
   if (bell.classList.contains("on")) {
@@ -187,9 +199,9 @@ bell.onclick = function () {
     });
   }
   Notification.requestPermission().then(function (p) {
-    if (p !== "granted") return sheet("<h3>通知被關掉了</h3>請到手機「設定 → 通知」找到 CHIU189 批發（或瀏覽器），把通知打開，再按一次 🔔。");
+    if (p !== "granted") return sheet("<h3>通知被關掉了</h3>請到手機「設定 → 通知」找到 CHIU189 批發（或瀏覽器），把通知打開，再按一次右上角的鈴鐺。");
     return reg.then(function (r) { return r.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: b64(auth.vkey)}); })
-      .then(function (sub) { return save(sub).then(function (res) { if (!res.ok) throw new Error(res.status); setOn(true); show("已開啟！有新品會通知你 🔔"); }); });
+      .then(function (sub) { return save(sub).then(function (res) { if (!res.ok) throw new Error(res.status); setOn(true); show("已開啟！有新品會通知你"); }); });
   }).catch(function (e) { sheet("<h3>開啟失敗</h3>" + String(e && e.message ? e.message : e).replace(/</g, "&lt;") + "<br>請稍後再試，或跟店家說。"); });
 };
 </script>
